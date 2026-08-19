@@ -129,6 +129,7 @@
   .card .body{ padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1; }
   .card h3{ margin:0; font-size:17px; font-weight:600; }
   .card .size{ font-size:13px; color:#8a7c65; margin-top:-4px; }
+  .card .popis{ font-size:12.5px; color:#6b5f4a; line-height:1.4; margin-top:-2px; }
 
   .badge{
     display:inline-flex; align-self:flex-start;
@@ -268,7 +269,11 @@
     { id:8,  kategorie:"Medovina",  nazev:"Medovina",              velikost:"0,5 l",  priceCzk:120, priceSats:8800,  available:true,  image:"IMG_20260721_134328.jpg" },
     { id:9,  kategorie:"Medovina",  nazev:"Medovina",              velikost:"0,2 l",  priceCzk:60,  priceSats:4400,  available:true,  image:"IMG_20260721_134357.jpg" },
     { id:10, kategorie:"Medovina",  nazev:"Medovina",              velikost:"0,1 l",  priceCzk:40,  priceSats:2900,  available:true,  image:"IMG_20260721_134409.jpg" },
-    { id:11, kategorie:"Propolis",  nazev:"Propolisová tinktura",  velikost:"50 ml",  priceCzk:120, priceSats:8800,  available:false, image:"", stavText:"Připravujeme" },
+    { id:11, kategorie:"Propolis",  nazev:"Propolisová tinktura – sprej",   velikost:"50 ml",  priceCzk:120, priceSats:8950, available:true, image:"IMG_20260810_182958.jpg" },
+    { id:12, kategorie:"Propolis",  nazev:"Propolisová tinktura – kapky",   velikost:"50 ml",  priceCzk:120, priceSats:8950, available:true, image:"IMG_20260810_182947.jpg" },
+    { id:13, kategorie:"Kosmetika", nazev:"Krém na ruce s propolisem",      velikost:"30 ml",  priceCzk:80,  priceSats:5970, available:true, image:"IMG_20260810_183020.jpg", popis:"Složení: včelí vosk, kokosový olej, bambucké máslo, propolis, vitamin A a E" },
+    { id:14, kategorie:"Kosmetika", nazev:"Krém na ruce s levandulí",       velikost:"30 ml",  priceCzk:60,  priceSats:4480, available:true, image:"IMG_20260810_183027.jpg", popis:"Složení: včelí vosk, kokosový olej, bambucké máslo, levandulový olej, vitamin A a E" },
+    { id:15, kategorie:"Kosmetika", nazev:"Balzám na rty",                  velikost:"5 ml",   priceCzk:30,  priceSats:2240, available:true, image:"IMG_20260818_183110.jpg" },
   ];
   // stavText je volitelné pole - pokud ho u produktu nepoužiješ, zobrazí se u nedostupné položky "Vyprodáno"
 
@@ -277,7 +282,7 @@
   document.getElementById('ln-address-text').textContent = LN_ADDRESS;
   document.getElementById('contact-link').href = "mailto:" + KONTAKT_EMAIL;
 
-  const KATEGORIE_ORDER = ["Med", "Medovina", "Propolis"];
+  const KATEGORIE_ORDER = ["Med", "Medovina", "Propolis", "Kosmetika"];
   let AKTUALNI_KURZ = null; // CZK za 1 BTC, doplní se automaticky při načtení stránky
 
   function vypocitejSats(priceCzk, fallbackSats){
@@ -324,7 +329,8 @@
           </div>
           <div class="body">
             <h3>${p.nazev}</h3>
-            <div class="size">${p.velikost}</div>
+            ${p.velikost ? `<div class="size">${p.velikost}</div>` : ''}
+            ${p.popis ? `<div class="popis">${p.popis}</div>` : ''}
             <span class="badge ${p.available ? 'in' : 'out'}">${p.available ? 'Skladem' : (p.stavText || 'Vyprodáno')}</span>
             <div class="price">
               <div class="czk">${p.priceCzk} Kč</div>
