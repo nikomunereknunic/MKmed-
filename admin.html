@@ -119,16 +119,23 @@
   async function prepni(id, dostupne){
     const row = document.getElementById('row-' + id);
     row.classList.add('saving');
+    const puvodniStav = JSON.parse(JSON.stringify(stav));
     stav[id] = dostupne;
     try{
-      await fetch(DOSTUPNOST_URL, {
+      const res = await fetch(DOSTUPNOST_URL, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(stav)
       });
-      document.getElementById('status').textContent = "Uloženo ✓";
+      if(res.ok){
+        document.getElementById('status').textContent = "Uloženo ✓";
+      } else {
+        stav = puvodniStav;
+        document.getElementById('status').textContent = "Uložení selhalo (kód " + res.status + "). Zkus to prosím znovu nebo napiš Claude.";
+      }
     }catch(e){
-      document.getElementById('status').textContent = "Uložení se nezdařilo, zkus to prosím znovu.";
+      stav = puvodniStav;
+      document.getElementById('status').textContent = "Uložení se nezdařilo (chyba připojení): " + e.message;
     }
     row.classList.remove('saving');
   }
