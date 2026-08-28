@@ -248,7 +248,8 @@
      ==================================================================== */
   const LN_ADDRESS = "morosewhip243@walletofsatoshi.com";
   const KONTAKT_EMAIL = "gmaek@email.cz";
-  const DOSTUPNOST_URL = "https://api.npoint.io/6268cc67e302d62773b6"; // sem se ukládá dostupnost z admin.html
+  const DOSTUPNOST_URL = "https://api.jsonbin.io/v3/b/6a91ddb7f5f4af5e294f0ab0/latest"; // sem se ukládá dostupnost z admin.html
+  const JSONBIN_KEY = "$2a$10$cimjBGdHbuCD1NlgTftSzuxmzpj2OsXVCNGnYhgCTACvCPxT6VG3K";
 
   /* ====================================================================
      PRODUKTY
@@ -354,8 +355,9 @@
 
   async function nactiDostupnost(){
     try{
-      const res = await fetch(DOSTUPNOST_URL);
-      const data = await res.json();
+      const res = await fetch(DOSTUPNOST_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
+      const json = await res.json();
+      const data = json.record || json;
       PRODUKTY.forEach(p => {
         if(Object.prototype.hasOwnProperty.call(data, p.id)){
           p.available = !!data[p.id];
