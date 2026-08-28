@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Správa dostupnosti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F6EFDD; --ink:#2B2117; --gold:#C98A1D; --gold-deep:#9C6A14;
+    --forest:#34452E; --forest-bg:#E4E9DC; --rust:#8B3A3A; --rust-bg:#F1DEDA;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--cream); color:var(--ink); font-family:'Inter',sans-serif; padding:20px 16px 60px; }
+  h1{ font-family:'Fraunces',serif; font-size:24px; margin:6px 0 4px; }
+  p.sub{ color:#8a7c65; font-size:13.5px; margin:0 0 24px; }
+  .status{ font-size:13px; margin-bottom:18px; padding:8px 12px; border-radius:8px; background:#fff; border:1px solid rgba(43,33,23,.1); }
+  .kat{ font-family:'Fraunces',serif; font-weight:600; font-size:16px; margin:22px 0 10px; }
+  .row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:#fff; border:1px solid rgba(43,33,23,.1); border-radius:12px;
+    padding:12px 14px; margin-bottom:10px;
+  }
+  .row .name{ font-size:14.5px; font-weight:600; }
+  .row .size{ font-size:12.5px; color:#8a7c65; margin-top:1px; }
+  .switch{
+    position:relative; width:52px; height:30px; flex-shrink:0; margin-left:12px;
+  }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{
+    position:absolute; cursor:pointer; inset:0; background:var(--rust-bg);
+    border-radius:30px; transition:.15s;
+  }
+  .slider:before{
+    content:""; position:absolute; height:24px; width:24px; left:3px; top:3px;
+    background:#fff; border-radius:50%; transition:.15s;
+  }
+  input:checked + .slider{ background:var(--forest-bg); }
+  input:checked + .slider:before{ transform:translateX(22px); }
+  .row.saving .slider{ opacity:.5; }
+</style>
+</head>
+<body>
+
+<h1>Správa dostupnosti</h1>
+<p class="sub">Ťukni na přepínač = uloží se rovnou, žádné další potvrzení. Změna se na katalogu projeví během pár vteřin.</p>
+<div class="status" id="status">Načítám aktuální stav…</div>
+
+<div id="list"></div>
+
+<script>
+  const DOSTUPNOST_URL = "https://api.npoint.io/6268cc67e302d62773b6";
+
+  // Jen pro zobrazení názvů - když přidáš nový produkt do index.html, přidej ho i sem se stejným id.
+  const PRODUKTY = [
+    { id:1,  kategorie:"Med",       nazev:"Med světlý květový",   velikost:"1 kg" },
+    { id:2,  kategorie:"Med",       nazev:"Med světlý květový",   velikost:"160 g" },
+    { id:3,  kategorie:"Med",       nazev:"Med tmavý medovicový", velikost:"1 kg" },
+    { id:4,  kategorie:"Med",       nazev:"Med tmavý medovicový", velikost:"160 g" },
+    { id:5,  kategorie:"Med",       nazev:"Med pastovaný",        velikost:"1 kg" },
+    { id:6,  kategorie:"Med",       nazev:"Med pastovaný",        velikost:"160 g" },
+    { id:7,  kategorie:"Medovina",  nazev:"Medovina",             velikost:"1 l" },
+    { id:8,  kategorie:"Medovina",  nazev:"Medovina",             velikost:"0,5 l" },
+    { id:9,  kategorie:"Medovina",  nazev:"Medovina",             velikost:"0,2 l" },
+    { id:10, kategorie:"Medovina",  nazev:"Medovina",             velikost:"0,1 l" },
+    { id:11, kategorie:"Propolis",  nazev:"Propolisová tinktura – sprej", velikost:"50 ml" },
+    { id:12, kategorie:"Propolis",  nazev:"Propolisová tinktura – kapky", velikost:"50 ml" },
+    { id:13, kategorie:"Kosmetika", nazev:"Krém na ruce s propolisem",    velikost:"30 ml" },
+    { id:14, kategorie:"Kosmetika", nazev:"Krém na ruce s levandulí",     velikost:"30 ml" },
+    { id:15, kategorie:"Kosmetika", nazev:"Balzám na rty",                velikost:"5 ml" },
+  ];
+  const KATEGORIE_ORDER = ["Med","Medovina","Propolis","Kosmetika"];
+
+  let stav = {};
+
+  async function nacti(){
+    try{
+      const res = await fetch(DOSTUPNOST_URL);
+      stav = await res.json();
+      document.getElementById('status').textContent = "Stav načten. Změny se ukládají okamžitě.";
+      vykresli();
+    }catch(e){
+      document.getElementById('status').textContent = "Nepodařilo se načíst aktuální stav – zkontroluj připojení a zkus obnovit stránku.";
+    }
+  }
+
+  function vykresli(){
+    const root = document.getElementById('list');
+    root.innerHTML = "";
+    KATEGORIE_ORDER.forEach(kat => {
+      const items = PRODUKTY.filter(p => p.kategorie === kat);
+      if(items.length === 0) return;
+      const h = document.createElement('div');
+      h.className = 'kat';
+      h.textContent = kat;
+      root.appendChild(h);
+
+      items.forEach(p => {
+        const dostupne = stav[p.id] !== undefined ? !!stav[p.id] : true;
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.id = 'row-' + p.id;
+        row.innerHTML = `
+          <div>
+            <div class="name">${p.nazev}</div>
+            <div class="size">${p.velikost}</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" ${dostupne ? 'checked' : ''} onchange="prepni(${p.id}, this.checked)">
+            <span class="slider"></span>
+          </label>
+        `;
+        root.appendChild(row);
+      });
+    });
+  }
+
+  async function prepni(id, dostupne){
+    const row = document.getElementById('row-' + id);
+    row.classList.add('saving');
+    stav[id] = dostupne;
+    try{
+      await fetch(DOSTUPNOST_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(stav)
+      });
+      document.getElementById('status').textContent = "Uloženo ✓";
+    }catch(e){
+      document.getElementById('status').textContent = "Uložení se nezdařilo, zkus to prosím znovu.";
+    }
+    row.classList.remove('saving');
+  }
+
+  nacti();
+</script>
+</body>
+</html>
