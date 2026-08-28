@@ -248,6 +248,7 @@
      ==================================================================== */
   const LN_ADDRESS = "morosewhip243@walletofsatoshi.com";
   const KONTAKT_EMAIL = "gmaek@email.cz";
+  const DOSTUPNOST_URL = "https://api.npoint.io/6268cc67e302d62773b6"; // sem se ukládá dostupnost z admin.html
 
   /* ====================================================================
      PRODUKTY
@@ -349,6 +350,22 @@
   }
   renderCatalog();
   nactiKurz();
+  nactiDostupnost();
+
+  async function nactiDostupnost(){
+    try{
+      const res = await fetch(DOSTUPNOST_URL);
+      const data = await res.json();
+      PRODUKTY.forEach(p => {
+        if(Object.prototype.hasOwnProperty.call(data, p.id)){
+          p.available = !!data[p.id];
+        }
+      });
+      renderCatalog();
+    }catch(e){
+      // pokud se dostupnost nepodaří načíst, zůstanou hodnoty "available" napsané přímo v souboru
+    }
+  }
 
   let qrRendered = false;
   function openModal(id){
