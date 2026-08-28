@@ -50,7 +50,8 @@
 <div id="list"></div>
 
 <script>
-  const DOSTUPNOST_URL = "https://api.npoint.io/6268cc67e302d62773b6";
+  const DOSTUPNOST_URL = "https://api.jsonbin.io/v3/b/6a91ddb7f5f4af5e294f0ab0";
+  const JSONBIN_KEY = "$2a$10$cimjBGdHbuCD1NlgTftSzuxmzpj2OsXVCNGnYhgCTACvCPxT6VG3K";
 
   // Jen pro zobrazení názvů - když přidáš nový produkt do index.html, přidej ho i sem se stejným id.
   const PRODUKTY = [
@@ -76,8 +77,9 @@
 
   async function nacti(){
     try{
-      const res = await fetch(DOSTUPNOST_URL);
-      stav = await res.json();
+      const res = await fetch(DOSTUPNOST_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_KEY } });
+      const json = await res.json();
+      stav = json.record || json;
       document.getElementById('status').textContent = "Stav načten. Změny se ukládají okamžitě.";
       vykresli();
     }catch(e){
@@ -124,7 +126,7 @@
     try{
       const res = await fetch(DOSTUPNOST_URL, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_KEY },
         body: JSON.stringify(stav)
       });
       if(res.ok){
